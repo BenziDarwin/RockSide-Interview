@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './src/authentication/Login';
 import Form from './src/screens/Form';
 import { auth } from './src/services/FirebaseConfig';
+import Register from './src/authentication/Register';
+
+const Stack = createNativeStackNavigator()
 
 export default function App() {
-  const [user, setUser] = useState("dfbdfb");
+  const [user, setUser] = useState(null);
   useEffect(() => {
       auth.onAuthStateChanged(e => {
         setUser(e)
@@ -14,22 +18,29 @@ export default function App() {
   
   if(user == null) {
     return (
-      <View style={styles.container}> 
-        <Login/> 
-      </View>
+      <NavigationContainer>
+      <Stack.Navigator  screenOptions={() => ({
+          headerShown: false,
+          animation: "none"
+      })}>
+          <Stack.Screen name='Login' component={Login}/>
+          <Stack.Screen name='Register' component={Register}/>
+          <Stack.Screen name='Form' component={Form}/>
+      </Stack.Navigator>
+  </NavigationContainer>
     );
   } else if (user != null) {
     return (
-        <Form/>
+      <NavigationContainer>
+      <Stack.Navigator  screenOptions={() => ({
+          headerShown: false,
+          animation: "none"
+      })}>
+        <Stack.Screen name='Form' component={Form}/>
+          <Stack.Screen name='Login' component={Login}/>
+          <Stack.Screen name='Register' component={Register}/>
+      </Stack.Navigator>
+  </NavigationContainer>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#dddd ',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

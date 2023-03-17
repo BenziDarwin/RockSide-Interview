@@ -6,6 +6,9 @@ import {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
 import { ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import MapView, {Marker} from 'react-native-maps';
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabase("places.db");
 
 export default function Form() {
     const [consent, setConsent] = useState(false)
@@ -48,9 +51,22 @@ export default function Form() {
       const areaHandler = () => {
         if(markers.length > 2) {
             if (markers.length == 3) {
-        
+                a = getLength(markers[0], markers[1])
+                b = getLength(markers[0], markers[2])
+                c = getLength(markers[1], markers[2])
+                s = (a+b+c)/2
+                setArea(Math.sqrt(s*(s-a)(s-b)(s-c)))
+                return;
             }
         }
+        setArea(0)
+        return;
+      }
+
+      const getLength = (pos1, pos2) => {
+        let x = pos1.x - pos2.x
+        let y = pos1.y - pos2.y
+        return x/y
       }
       const markerHandler = (e) => {
         let marker = {
@@ -76,7 +92,24 @@ export default function Form() {
       }
 
       useEffect(() => {
+        async function initDatabase() {
+            await new Promise((resolve, reject) => {
+                db.transaction(
+                    function (tx) {
+                        tx.executeSql("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY NOT NULL, consent BOOLEAN NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, imageUri TEXT NOT NULL, address TEXT NOT NULL , pos TEXT NOT NULL)");
+                    },
+                    function (error) {
+                        reject(error.message);
+                    },
+                    function () {
+                        resolve(true);
+                        console.log('Created database OK');
+                    }
+              );
+        });
+        }
         shapeHandler()
+        areaHandler()
       },[markers])
 
     return(

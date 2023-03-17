@@ -1,9 +1,10 @@
-import { StyleSheet, View, Text, TextInput, Button } from "react-native";
+import { StyleSheet, View, Text, TextInput, Button, TouchableNativeFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as yup from "yup";
 import { Formik } from 'formik';
 import { useState } from "react";
 import FirebaseAuth from "../services/FirebaseAuth";
+import { useNavigation } from '@react-navigation/native';
 
 const loginSchema = yup.object({
     email: yup.string().email("Invalid email address!").required("Email is required!"),
@@ -12,6 +13,7 @@ const loginSchema = yup.object({
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigation()
 
     return (
     <SafeAreaView style={[styles.container]}>
@@ -25,6 +27,7 @@ export default function Login() {
                 result = await FirebaseAuth.signIn(values.email, values.password);
                 if(result.code == 0) {
                   console.log("Signed In!")
+                  navigate.navigate("Form")
                 }
                 else {
                   console.log(result.message)
@@ -44,6 +47,9 @@ export default function Login() {
                 <Text style={styles.error}>{props.errors.password}</Text>
                 <View style={styles.button}>
                 <Button onPress={props.handleSubmit} disabled={isLoading ? true : false} title={isLoading ? "Loading" : "Submit"} color="#1573FE"/>
+                <TouchableNativeFeedback onPress={() => navigate.navigate("Register")}>
+                <Text style={styles.nav}>Don't have an account? Click here to register.</Text>
+                </TouchableNativeFeedback>
                 </View>
             </View>
             }
@@ -108,4 +114,13 @@ const styles = StyleSheet.create({
         alignContent: "center",
         textAlign: "center" 
     },
+    nav: {
+        alignSelf: "center",
+        textAlign: "center",
+        marginTop: 10,
+        marginBottom: 10,
+        fontSize: 18,
+        fontWeight: "bold",
+        width: 300,
+      },
 })

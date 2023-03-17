@@ -1,9 +1,10 @@
-import { StyleSheet, View, Text, TextInput, Button } from "react-native";
+import { StyleSheet, View, Text, TextInput, Button, TouchableNativeFeedback } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Formik } from "formik";
 import *as yup from "yup";
 import { useState } from "react";
 import FirebaseAuth from "../services/FirebaseAuth";
+import { useNavigation } from '@react-navigation/native';
 
 const registerSchema = yup.object({
     email: yup.string().email("Invalid email address!").required("Email is required!"),
@@ -13,6 +14,7 @@ const registerSchema = yup.object({
 
 export default function Register() {
     const [isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigation()
 
     return (
     <SafeAreaView style={[styles.container]}>
@@ -26,6 +28,7 @@ export default function Register() {
             result = await FirebaseAuth.register(values.email, values.password);
             if(result.code == 0) {
               console.log("Registered!")
+              navigate.navigate("Form")
             }
             else {
               console.log(result.message)
@@ -48,6 +51,9 @@ export default function Register() {
             <Text style={styles.error}>{props.errors.passwordConfirm}</Text>
             <View style={styles.button}>
               <Button style={styles.disable} onPress={props.handleSubmit} disabled={isLoading ? true : false} title={isLoading ? "Loading" : "Submit"} color="#1573FE"/>
+              <TouchableNativeFeedback onPress={() => navigate.navigate("Register")}>
+                <Text style={styles.nav}>Already have an account? Click here to sign in.</Text>
+                </TouchableNativeFeedback>
             </View>
           </View>
             }
@@ -112,5 +118,14 @@ const styles = StyleSheet.create({
         marginHorizontal: 100,
         alignContent: "center",
         textAlign: "center" 
+    },
+    nav: {
+      alignSelf: "center",
+      textAlign: "center",
+      marginTop: 10,
+      marginBottom: 10,
+      fontSize: 18,
+      fontWeight: "bold",
+      width: 300,
     },
 })
