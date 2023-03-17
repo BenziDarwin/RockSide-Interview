@@ -1,19 +1,34 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import Login from './src/authentication/Login';
+import Form from './src/screens/Form';
+import { auth } from './src/services/FirebaseConfig';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [user, setUser] = useState("dfbdfb");
+  useEffect(() => {
+      auth.onAuthStateChanged(e => {
+        setUser(e)
+      })
+  },[user])
+  
+  if(user == null) {
+    return (
+      <View style={styles.container}> 
+        <Login/> 
+      </View>
+    );
+  } else if (user != null) {
+    return (
+        <Form/>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#dddd ',
     alignItems: 'center',
     justifyContent: 'center',
   },
