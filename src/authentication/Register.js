@@ -24,6 +24,7 @@ export default function Register() {
          initialValues={{email:"", password: ""}}
          validationSchema={registerSchema}
          onSubmit={async (values, actions) => {
+          setIsLoading(true)
           try{
             result = await FirebaseAuth.register(values.email, values.password);
             if(result.code == 0) {
@@ -36,6 +37,7 @@ export default function Register() {
           }catch(e) {
             console.log(e)
           }  
+          setIsLoading(false)
          }}
         >
             {(props) => 
@@ -51,7 +53,7 @@ export default function Register() {
             <Text style={styles.error}>{props.errors.passwordConfirm}</Text>
             <View style={styles.button}>
               <Button style={styles.disable} onPress={props.handleSubmit} disabled={isLoading ? true : false} title={isLoading ? "Loading" : "Submit"} color="#1573FE"/>
-              <TouchableNativeFeedback onPress={() => navigate.navigate("Register")}>
+              <TouchableNativeFeedback onPress={() => navigate.navigate("Login")}>
                 <Text style={styles.nav}>Already have an account? Click here to sign in.</Text>
                 </TouchableNativeFeedback>
             </View>

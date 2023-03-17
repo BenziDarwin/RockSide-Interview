@@ -23,8 +23,10 @@ export default function Login() {
         initialValues={{email:"", password: "", passwordConfirm: ""}}
         validationSchema={loginSchema}
         onSubmit={async (values, actions) => {
+          setIsLoading(true)
             try{
                 result = await FirebaseAuth.signIn(values.email, values.password);
+                console.log(result)
                 if(result.code == 0) {
                   console.log("Signed In!")
                   navigate.navigate("Form")
@@ -35,6 +37,7 @@ export default function Login() {
               }catch(e) {
                 console.log(e)
               }  
+              setIsLoading(false)
         }}
         >
             {(props) => 

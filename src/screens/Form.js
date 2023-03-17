@@ -146,7 +146,7 @@ export default function Form() {
             })}
             </MapView>
             <Text style={styles.heading}>Area-mapping:</Text>
-            <Text style={{alignSelf:"center"}}>Long press map to set markers.</Text>
+            <Text style={{alignSelf:"center"}}>Long press map to put marker.</Text>
             <Text style={styles.heading}>Area: {area} {"\n\n"} Shape: {shape}</Text>
             <Text style={styles.heading}>Comments:</Text>
             <TextInput
@@ -160,7 +160,17 @@ export default function Form() {
         </View>
         :   <View>
                <Text style={styles.heading}>Area-mapping:</Text>
-               
+               <MapView
+                style={{ alignSelf:"center", width:300, height:400}}
+                initialRegion={{
+                latitude: 0.13827841987386708,
+                longitude: 32.579226326197386,
+                latitudeDelta: 2.1580338756493753,
+                longitudeDelta: 1.80445846170187,
+            }}
+            onLongPress={(event) => markerHandler(event)}
+            >
+        </MapView>
                 <Text style={styles.heading}>Comments:</Text>
                 <TextInput
         editable

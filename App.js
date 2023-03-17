@@ -12,10 +12,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   useEffect(() => {
       auth.onAuthStateChanged(e => {
-        if(e != null) {
-          setUser(e)
-        }
-        setUser(auth.currentUser)
+        setUser(e)
       })
   },[user])
   

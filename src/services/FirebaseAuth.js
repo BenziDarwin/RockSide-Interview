@@ -20,7 +20,6 @@ class FirebaseAuth {
   let message = {code: null, message:null}
   await createUserWithEmailAndPassword(auth, email, password)
   .then(() => {
-      console.log('User account created & signed in!');
       message = {code:0, message:"success"};
   })
   .catch(error => {
@@ -36,9 +35,8 @@ class FirebaseAuth {
 
   static async signIn(email, password) {
     let message = {code: null, message:null}
-      signInWithEmailAndPassword(auth, email, password)
+      await signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        console.log('User account signed in!');
         message = {code:0, message:"success"};
     })
     .catch(error => {
