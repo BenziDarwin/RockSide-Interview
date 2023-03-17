@@ -18,7 +18,7 @@ class FirebaseAuth {
 
   static async register(email, password) {
   let message = {code: null, message:null}
-  await createUserWithEmailAndPassword(_auth, email, password)
+  await createUserWithEmailAndPassword(auth, email, password)
   .then(() => {
       console.log('User account created & signed in!');
       message = {code:0, message:"success"};
@@ -36,7 +36,7 @@ class FirebaseAuth {
 
   static async signIn(email, password) {
     let message = {code: null, message:null}
-      signInWithEmailAndPassword(_auth, email, password)
+      signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         console.log('User account signed in!');
         message = {code:0, message:"success"};

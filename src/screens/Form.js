@@ -92,22 +92,6 @@ export default function Form() {
       }
 
       useEffect(() => {
-        async function initDatabase() {
-            await new Promise((resolve, reject) => {
-                db.transaction(
-                    function (tx) {
-                        tx.executeSql("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY NOT NULL, consent BOOLEAN NOT NULL, email TEXT NOT NULL, name TEXT NOT NULL, imageUri TEXT NOT NULL, address TEXT NOT NULL , pos TEXT NOT NULL)");
-                    },
-                    function (error) {
-                        reject(error.message);
-                    },
-                    function () {
-                        resolve(true);
-                        console.log('Created database OK');
-                    }
-              );
-        });
-        }
         shapeHandler()
         areaHandler()
       },[markers])
