@@ -7,7 +7,9 @@ class FirebaseAuth {
   }
 
   static getUser() {
-    return auth.currentUser;
+    auth.onAuthStateChanged(user => {
+      return user
+    });
   }
 
 
