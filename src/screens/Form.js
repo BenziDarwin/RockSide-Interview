@@ -7,8 +7,9 @@ import { ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import MapView, {Marker} from 'react-native-maps';
 import * as SQLite from "expo-sqlite";
+import { auth } from "../services/FirebaseConfig";
 
-const db = SQLite.openDatabase("places.db");
+const db = SQLite.openDatabase("user.db");
 
 export default function Form() {
     const [consent, setConsent] = useState(false)
@@ -16,8 +17,10 @@ export default function Form() {
     const [image, setImage] = useState(null);
     const [location, setLocation] = useState({});
     const [markers, setMarkers] = useState([]);
-    const [area, setArea] = useState(0);
+    const [area, setArea] = useState(null);
     const [shape, setShape] = useState(0);
+    const [name, setName] = useState("");
+    const [comment, setComment] = useState("");
 
     const onChange = (event, selectedDate) => {
         const currentDate = selectedDate;
@@ -51,22 +54,34 @@ export default function Form() {
       const areaHandler = () => {
         if(markers.length > 2) {
             if (markers.length == 3) {
-                a = getLength(markers[0], markers[1])
-                b = getLength(markers[0], markers[2])
-                c = getLength(markers[1], markers[2])
-                s = (a+b+c)/2
-                setArea(Math.sqrt(s*(s-a)(s-b)(s-c)))
-                return;
+              a = getLength(markers[0].position, markers[1].position)
+              b = getLength(markers[0].position, markers[2].position)
+              c = getLength(markers[1].position, markers[2].position)
+              s = (a+b+c)/2
+            let calculatedArea = Math.sqrt(s*(s-a)*(s-b)*(s-c)).toFixed(4)
+            setArea(calculatedArea)
+            return;
+            }
+
+            else if(markers.length == 4) {
+              a = getLength(markers[0].position, markers[1].position)
+              b = getLength(markers[1].position, markers[2].position)
+              c = getLength(markers[2].position, markers[3].position)
+              d = getLength(markers[0].position, markers[3].position)
+              e = getLength(markers[0].position, markers[2].position)
+              s1 = (a+b+e)/2
+              s2 = (d+c+e)/2
+              let calculatedArea = (Math.sqrt(s1*(s1-a)*(s1-b)*(s1-e)) + Math.sqrt(s2*(s2-d)*(s2-c)*(s2-e))).toFixed(4)
+              setArea(calculatedArea)
+              return;
             }
         }
-        setArea(0)
+        setArea(null)
         return;
       }
 
       const getLength = (pos1, pos2) => {
-        let x = pos1.x - pos2.x
-        let y = pos1.y - pos2.y
-        return x/y
+        return Math.sqrt((pos1.x -pos2.x)**2 + (pos1.y - pos2.y)**2);
       }
       const markerHandler = (e) => {
         let marker = {
@@ -91,10 +106,37 @@ export default function Form() {
         }
       }
 
+      const submitHandler =  async () => {
+        query = `insert into user (${auth.currentUser.email}, ${consent}, ${date}, ${name}, ${JSON.stringify(location)}, ${shape}, ${area}, ${comment})`
+        await new Promise(() => {
+        try {
+          db.transaction(tx => {
+            tx.executeSql(query)})
+        } catch (error) {
+          console.log(error)
+        }
+      })
+    }
+
       useEffect(() => {
+        async function initDatabase() {
+          await new Promise(() => {
+            try {
+              db.transaction(tx => {
+                tx.executeSql(
+                  'create table if not exists user (email TEXT NOT NULL, consent BOOLEAN NOT NULL, date INT NOT NULL, name TEXT NOT NULL, coordinates TEXT NOT NULL, shape TEXT NOT NULL, area FLOAT NOT NULL, comment TEXT NOT NULL);'
+                )
+              })
+            } catch (error) {
+              console.log("db error creating tables"); console.log(error);
+            }});
+            results = await db.executeSql(`SELECT * FROM user`);
+            console.log(results)
+          }
+        initDatabase()
         shapeHandler()
         areaHandler()
-      },[markers])
+  },[markers])
 
     return(
         <SafeAreaView style={styles.container}>
@@ -116,7 +158,7 @@ export default function Form() {
             <Button onPress={showMode}  title={"Select Date"} color="#1573FE"/>
             </View>
             <Text style={styles.heading}>Name:</Text>
-            <TextInput style={styles.input}  placeholder='Enter Name'/>
+            <TextInput style={styles.input} onChangeText={(val) => setName(val)}  placeholder='Enter Name'/>
             <Text style={styles.heading}>Picture:</Text>
             <View style={styles.button}>
                 <Image style={{alignSelf:"center", width:200, height:200, marginBottom:10}} source={image?{uri:image}:require("../../assets/placeholder.jpg")}/>
@@ -147,16 +189,19 @@ export default function Form() {
             </MapView>
             <Text style={styles.heading}>Area-mapping:</Text>
             <Text style={{alignSelf:"center"}}>Long press map to put marker.</Text>
-            <Text style={styles.heading}>Area: {area} {"\n\n"} Shape: {shape}</Text>
+            <Text style={styles.heading}>Area: {area} Km {"\n\n"} Shape: {shape}</Text>
             <Text style={styles.heading}>Comments:</Text>
             <TextInput
         editable
         multiline
         numberOfLines={4}
         maxLength={40}
-        onChangeText={text => null}
+        onChangeText={text => setComment(text)}
         style={{padding: 10, marginBottom:10, height: 40, width: 250,  alignSelf:"center", borderWidth:1}}
       />
+       <View style={styles.button}>
+            <Button onPress={() => submitHandler()}  title={"Submit"} color="#1573FE"/>
+            </View>
         </View>
         :   <View>
                <Text style={styles.heading}>Area-mapping:</Text>
@@ -170,16 +215,25 @@ export default function Form() {
             }}
             onLongPress={(event) => markerHandler(event)}
             >
+              {markers.map((marker, index)=> {
+                return (
+                  <Marker coordinate={marker.coordinate} key={index} pinColor={marker.color}/>
+                )
+              })}
         </MapView>
+        <Text style={styles.heading}>Area: {area} Km {"\n\n"} Shape: {shape}</Text>
                 <Text style={styles.heading}>Comments:</Text>
                 <TextInput
         editable
         multiline
         numberOfLines={4}
         maxLength={40}
-        onChangeText={text => null}
+        onChangeText={text => setComment(text)}
         style={{padding: 10, height: 40, marginBottom:10, width: 250,  alignSelf:"center", borderWidth:1}}
       />
+       <View style={styles.button}>
+            <Button onPress={() => submitHandler()}  title={"Submit"} color="#1573FE"/>
+            </View>
             </View>
             }
             </ScrollView>
